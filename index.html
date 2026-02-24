@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Carta Aberta</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
+
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Sofia+Sans:ital,wght@0,1..1000;1,1..1000&display=swap');
+
+        body {
+            background: #3f3f3f;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 16px;
+            padding: 16px;
+            margin: 0;
+            min-height: 100vh;
+            font-family: 'Sofia Sans', sans-serif;
+        }
+
+        /* ================= ENVELOPE ================ */
+        .envelope-wrapper {
+            position: relative;
+            width: 100%;
+            max-width: 600px;
+            aspect-ratio: 3 / 2;
+            cursor: default;
+            margin-top: 150px;
+            clip-path: inset(-500px -500px 0px -500px);
+        }
+
+        .envelope-pocket {
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(145deg, #352626, #000000);
+            border-radius: 0 0 12px 12px;
+            z-index: 30;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        }
+
+        /* ================= ABA DO ENVELOPE ================= */
+        .envelope-flap {
+            position: absolute;
+            inset: 0;
+            background: #381b1b;
+            clip-path: polygon(0 0, 100% 0, 50% 55%);
+            transform-origin: top;
+            transition: transform 0.8s ease-in-out;
+            z-index: 40;
+        }
+
+        .open .envelope-flap {
+            transform: rotateX(180deg);
+            z-index: 10;
+        }
+
+        .closing .envelope-flap {
+            transition: transform 0.8s ease-in-out 1.5s, z-index 0s 1.9s;
+        }
+
+        /* ================= CARTÃO 3D (carta) ================= */
+        .card-container {
+            position: relative;
+            width: 100%;
+            max-width: 780px;
+            height: 100%;
+            perspective: 1400px;
+        }
+
+        .card {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            min-height: 380px;
+            transform-style: preserve-3d;
+            transition: transform 1s ease;
+        }
+
+        .face {
+            position: absolute;
+            inset: 0;
+            backface-visibility: hidden;
+        }
+
+        .carta {
+            position: absolute;
+            inset: 0;
+            background: #292929;
+            border: 3px solid #8b2b2b;
+            padding: clamp(20px, 6vw, 42px);
+            box-shadow: 0 18px 40px rgba(250, 163, 163, 0.25);
+            overflow: hidden;
+            isolation: isolate;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .conteudo-carta {
+            overflow-y: auto;
+            height: 100%;
+            padding-right: 8px;
+        }
+
+        .conteudo-carta::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .conteudo-carta::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        .conteudo-carta::-webkit-scrollbar-thumb {
+            background-color: #8b2b2b;
+            border-radius: 10px;
+        }
+
+        /* ================= carta ================= */
+        #carta {
+            position: absolute;
+            left: 50%;
+            top: 20px;
+            transform: translateX(-50%);
+            width: 100%;
+            max-width: 780px;
+            height: 500px;
+            z-index: 20;
+            visibility: hidden;
+        }
+
+        .open #carta {
+            animation: tirarcarta 2.5s ease-in-out 0.6s forwards;
+            visibility: visible;
+            transition: visibility 0s 0.6s;
+        }
+
+        .closing #carta {
+            animation: guardarcarta 2s ease-in-out forwards;
+            visibility: visible;
+            transition: visibility 0s 2s;
+        }
+
+        @keyframes tirarcarta {
+            0% {
+                top: 20px;
+                z-index: 20;
+            }
+
+            50% {
+                top: -450px;
+                z-index: 20;
+            }
+
+            51% {
+                z-index: 50;
+            }
+
+            100% {
+                top: -170px;
+                z-index: 50;
+            }
+        }
+
+        @keyframes guardarcarta {
+            0% {
+                top: -100px;
+                z-index: 50;
+            }
+
+            50% {
+                top: -450px;
+                z-index: 50;
+            }
+
+            51% {
+                z-index: 20;
+            }
+
+            100% {
+                top: 20px;
+                z-index: 20;
+            }
+        }
+
+        /* ================= BOTÕES ================= */
+        .btn-abrir {
+            position: absolute;
+            bottom: 5%;
+            background-color: #2b2b2b;
+            border: 1px solid #ffffff;
+            padding: 0.5rem;
+            border-radius: 25px;
+            font-size: large;
+            font-weight: 600;
+            color: #fff;
+        }
+
+        /* ================== REVELAR FOTO ================= */
+        .reveal {
+            z-index: 10 !important;
+            transition: z-index 1s ease-in-out;
+
+        }
+
+        .oculto {
+            z-index: 0;
+        }
+
+        /* ================== RESPONSIVIDADE MOBILE ================= */
+        @media (max-width: 520px) {
+            #carta {
+                height: 340px;
+            }
+
+            .card {
+                min-height: 340px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="w-full h-full z-0 absolute" style="opacity: 45%;"></div>
+
+    <div class="envelope-wrapper" id="mainWrapper">
+
+        <div class="envelope-flap"></div>
+        <div class="envelope-pocket"></div>
+
+        <div class="inner-mask">
+            <div id="carta">
+
+                <div class="card-container">
+                    <div class="card" id="card">
+
+                        <!-- CONTEÚDO -->
+                        <div class="face back carta text-left">
+                            <div class="conteudo-carta">
+                                <p class="text-light max-w-md mx-auto mt-6">
+                                    Querida Sofia,
+                                    <br>
+                                    Se eu ainda me lembrar bem de como usar a função “datelock” que eu tinha programado
+                                    essa mensagem vai estar sendo liberada para você após a colação. <br>
+                                    Caramba... nos formamos. Eu nem sei exatamente como iniciar essa carta, mas eu estou
+                                    muito feliz por ter passado esses 3 anos com você, por nossos caminhos terem se
+                                    cruzado, por ter tido a oportunidade de conhecer melhor você e, principalmente, por
+                                    estarmos finalizando essa etapa juntos, como um casal. Eu estaria mentindo se
+                                    dissesse que eu nunca imaginei isso antes, embora eu não tivesse certeza se isso era
+                                    algo que realmente aconteceria eu sempre quis que fosse. <br>
+                                    Sofia, eu te amo, te amo mil milhões. Tem tantas coisas que eu quero te dizer que
+                                    nunca caberiam em uma carta meu amor. Você é uma pessoa espetacular, criativa,
+                                    inteligente, engraçada, linda e muitas outras coisas, coisas que durante esses 3
+                                    anos eu sempre admirei em você e ainda admiro. <br>
+                                    É claro que não acabaram as coisas que eu gostaria de falar para você ao longo
+                                    desses 3 anos, mas agora não é o momento certo para todas (vai esperar mais um
+                                    pouquinho), apenas para uma: Desde a escola eu sempre achei você uma artista
+                                    incrível e tem uma obra de arte sua que eu nunca cheguei a falar tudo que eu achei,
+                                    um desenho, um desenho lindo que você me deu e que eu guardei comigo até hoje, um
+                                    desenho simples feito à mão, mas que, pra mim, é maravilhoso ver ele, principalmente
+                                    porque foi você que me deu ele. E eu tentei pensar em uma forma de demonstrar o quão
+                                    eu fiquei feliz com aquilo, por isso espero que goste também, meu amor (o original
+                                    ainda está intacto).
+
+                                </p>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <button onclick="togglecarta()" class="btn-abrir">Abrir</button>
+
+    <div>
+        <div class="position-absolute top-1 left-5 transform -translate-x-1/2 bg-black text-white p-2 z-1 text-center"
+            style="width: 200px; height: 140px; cursor: pointer;" onclick="revealImage()">
+            Clique
+            para revelar</div>
+        <img src="./desenho.png" alt="Desenho completado"
+            class="img-thumbnail oculto position-absolute bottom-2 left-5 transform -translate-x-1/2"
+            style="max-width: 200px;">
+    </div>
+
+</body>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"
+    integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI"
+    crossorigin="anonymous"></script>
+
+<script>
+    function togglecarta() {
+        const wrapper = document.getElementById('mainWrapper');
+        const isOpening = !wrapper.classList.contains('open');
+
+        if (isOpening) {
+            wrapper.classList.remove('closing');
+            wrapper.classList.add('open');
+
+        } else {
+            wrapper.classList.remove('open');
+            wrapper.classList.add('closing');
+        }
+    }
+
+    function revealImage() {
+        const img = document.querySelector('img');
+        img.classList.remove('oculto');
+        img.classList.add('reveal');
+    }
+</script>
+
+</html>
